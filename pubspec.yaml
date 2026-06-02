@@ -1,0 +1,40 @@
+name: joride
+description: joRide - Car Rental and IoT Tracking System.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+  flutter: '>=3.32.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_maps_flutter: ^2.14.2
+  http: ^1.5.0
+  location: ^5.0.3
+  provider: ^6.1.5+1
+  shared_preferences: ^2.5.3
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0 # Or your current lints version
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo_full.png
+    - assets/logo_icon.png
+    # ── Car images (5 vehicles in seed data) ───────────────────────────────
+    # Drop your own PNG file with these exact names in JoFront/assets/cars/
+    # If a file is missing, the app falls back to the Image.network URL or icon.
+    - assets/cars/car_1_toyota_corolla.png   # JO-AMM01 - Toyota Corolla
+    - assets/cars/car_2_bmw_320i.png         # JO-AMM02 - BMW 320i
+    - assets/cars/car_3_landcruiser.png      # JO-AMM03 - Toyota Land Cruiser
+    - assets/cars/car_4_tesla_model3.png     # JO-AMM04 - Tesla Model 3
+    - assets/cars/car_5_hyundai_elantra.png  # JO-AMM05 - Hyundai Elantra

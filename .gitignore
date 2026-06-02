@@ -1,0 +1,20 @@
+## Flutter / Dart
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+*.g.dart
+*.freezed.dart
+
+## IDE
+.idea/
+.vscode/
+*.iml
+
+## Android / iOS keys — never commit
+android/key.properties
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+*.keystore
+*.jks
