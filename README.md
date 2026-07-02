@@ -1,81 +1,71 @@
-# What is JoRide Frontend Project
+# JoRide Frontend
 
-## Overview
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart)](https://dart.dev/)
+[![Provider](https://img.shields.io/badge/State-Provider-informational)](https://pub.dev/packages/provider)
 
-**JoRide Frontend** is a **Flutter** mobile/web application for a self-service car-rental platform in Jordan. Users browse available vehicles, book a car for minutes/hours/days, pay via an in-app wallet, receive a **digital key** to unlock the car, and track trip duration with a live fare meter. The app supports **Arabic and English** (with RTL layout) and **dark/light themes**.
+Flutter mobile/web application for the **JoRide** self-service car-rental platform in Jordan. Users browse vehicles, book by the minute/hour/day, pay via in-app wallet, receive a **digital key** to unlock the car, and track trip cost with a live fare meter. Supports Arabic and English (RTL) and dark/light themes.
 
-**Tech stack:** Flutter (Dart) · Provider (state management) · HTTP REST client → JoRide Backend API · flutter_secure_storage (JWT persistence) · flutter_localizations (AR/EN i18n)
+> **Related:** [joride-backend](https://github.com/omaralrayyan7/joride-backend) — ASP.NET Core REST API
 
----
+## Screenshots
 
-## Key Code Segments
+| Home | Car Details | Fare Meter | Wallet |
+|------|------------|-----------|--------|
+| ![home](docs/screen_home.png) | ![car](docs/screen_car.png) | ![fare](docs/screen_fare.png) | ![wallet](docs/screen_wallet.png) |
 
-### App Entry & Providers (`lib/main.dart`)
-Bootstraps theme and locale providers, and routes unauthenticated users to the login screen.
+> Screenshots captured on Android emulator. Run the app to see the full UI.
 
-```dart
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
-}
-```
+## Tech Stack
 
-### API Service — Auth (`lib/lib/services/api_service.dart`)
-Handles login/register and persists the JWT token securely on-device.
+| Layer | Technology |
+|---|---|
+| Framework | Flutter (Dart) |
+| State Management | Provider (ChangeNotifier) |
+| HTTP Client | `http` package → JoRide Backend REST API |
+| Auth Storage | `flutter_secure_storage` (JWT) |
+| i18n | `flutter_localizations` (AR / EN) |
+| Calendar | `table_calendar` |
 
-```dart
-static Future<AuthResponse> login({required String email, required String password}) async {
-  final res = await _post('/api/auth/login', {'email': email, 'password': password});
-  final auth = AuthResponse.fromJson(res);
-  await _storage.write(key: _tokenKey, value: auth.token);
-  return auth;
-}
+## Key Features
 
-static Future<AuthResponse> register({
-  required String name, required String email,
-  required String password, required String phone, ...
-}) async {
-  final res = await _post('/api/auth/register', { 'name': name, 'email': email, ... });
-  final auth = AuthResponse.fromJson(res);
-  await _persistAuth(auth);
-  return auth;
-}
-```
+- **Vehicle Browser** — filter by availability, type, price
+- **Live Booking** — select duration (minutes/hours/days), confirm fare upfront
+- **Digital Key** — receive time-limited unlock token on trip start
+- **Fare Meter** — real-time cost counter during active trip
+- **In-app Wallet** — top up, pay trips, view transaction history
+- **AR / EN + RTL** — full bilingual support with automatic RTL layout
+- **Dark / Light Theme** — persisted preference via Provider
 
-### API Service — Trip Booking
-Sends a trip-start request to the backend, which charges the wallet and issues the digital key.
-
-```dart
-static Future<Map<String, dynamic>> startTrip({
-  required int userId, required int vehicleId,
-  required int duration, required String durationType,
-  required double totalFare, required String paymentMethod,
-}) async {
-  return await _post('/api/trips/start', {
-    'userId': userId, 'vehicleId': vehicleId,
-    'duration': duration, 'durationType': durationType,
-    'totalFare': totalFare, 'paymentMethod': paymentMethod,
-  });
-}
-```
-
-### Screens Overview
+## Screens
 
 | Screen | Purpose |
 |---|---|
-| `login_screen.dart` | Email/password login with JWT storage |
-| `register_screen.dart` | New user registration + license upload |
-| `Home Screen.dart` | Vehicle listing with availability filter |
-| `CarDetailsScreen.dart` | Vehicle specs + booking form |
-| `FareMeterScreen.dart` | Live timer & cost during active trip |
-| `DigitalKeyScreen.dart` | Unlock/lock the rented car |
-| `WalletScreen.dart` | Balance, top-up, transaction history |
-| `MyReservationsScreen.dart` | Past and active trip list |
-| `AdminDashboardScreen.dart` | Admin-only: user & fleet management |
+| Login / Register | JWT auth with license upload |
+| Home | Vehicle listing with availability filter |
+| Car Details | Specs + booking form |
+| Fare Meter | Live timer & cost during trip |
+| Digital Key | Unlock/lock the rented car |
+| Wallet | Balance, top-up, history |
+| My Reservations | Past and active trips |
+| Admin Dashboard | User & fleet management |
+
+## Getting Started
+
+```bash
+git clone https://github.com/omaralrayyan7/joride-frontend.git
+cd joride-frontend
+flutter pub get
+```
+
+Update `lib/lib/services/api_service.dart` — set `_baseUrl` to your JoRide backend URL, then:
+
+```bash
+flutter run
+```
+
+Requires Flutter SDK ≥ 3.0.0. Tested on Android and Web.
+
+## License
+
+[MIT](LICENSE)
