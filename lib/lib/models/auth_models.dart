@@ -219,6 +219,10 @@ class WalletTransaction {
   final String description;
   final double amount;
   final DateTime createdAt;
+  /// Only meaningful value is 'pending' (backend E5.4). A null/absent
+  /// status means the transaction already landed — there is no literal
+  /// "confirmed" value on the wire, so this is never compared against one.
+  final String? status;
 
   const WalletTransaction({
     required this.id,
@@ -227,7 +231,10 @@ class WalletTransaction {
     required this.description,
     required this.amount,
     required this.createdAt,
+    this.status,
   });
+
+  bool get isPending => status?.toLowerCase() == 'pending';
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
     return WalletTransaction(
@@ -237,6 +244,7 @@ class WalletTransaction {
       description: (json['description'] as String?) ?? '',
       amount: (json['amount'] as num).toDouble(),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      status: json['status'] as String?,
     );
   }
 }

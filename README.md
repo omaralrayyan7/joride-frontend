@@ -58,13 +58,26 @@ cd joride-frontend
 flutter pub get
 ```
 
-Update `lib/lib/services/api_service.dart` — set `_baseUrl` to your JoRide backend URL, then:
-
 ```bash
 flutter run
 ```
 
 Requires Flutter SDK ≥ 3.0.0. Tested on Android and Web.
+
+### Configuring the backend URL
+
+`ApiService.baseUrl` defaults to `http://localhost:9000` (web) / `http://10.0.2.2:9000` (Android emulator) for local development. Point the app at a different backend — staging, production, or a LAN-hosted dev server — with `--dart-define=BASE_URL=...` at run or build time:
+
+```bash
+# Local backend (default, no flag needed)
+flutter run -d chrome
+
+# Staging
+flutter run -d chrome --dart-define=BASE_URL=https://staging.joride.app
+
+# Production build
+flutter build web --dart-define=BASE_URL=https://api.joride.app
+```
 
 ## License
 

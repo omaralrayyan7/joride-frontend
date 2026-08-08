@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'Home Screen.dart';
 import 'FareMeterScreen.dart';
+import 'HyperPayPaymentScreen.dart';
 import 'models/auth_models.dart';
 import 'services/api_service.dart';
 
@@ -108,12 +109,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _pay() async {
+    final tax = widget.total * 0.05;
+    const bookingFee = 1.50;
+    final finalTotal = widget.total + tax + bookingFee;
+
+    // Credit-card payments go through the HyperPay/OPPWA Copy&Pay widget
+    // first. The backend confirms the actual charge via webhook — once that
+    // happens, startTrip below still runs the same as for wallet payments.
+    if (selectedPayment == 'Credit Card') {
+      final attempted = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HyperPayPaymentScreen(amount: finalTotal),
+        ),
+      );
+      if (attempted != true || !mounted) return;
+    }
+
     setState(() => _paying = true);
     Trip? trip;
     try {
-      final tax = widget.total * 0.05;
-      const bookingFee = 1.50;
-      final finalTotal = widget.total + tax + bookingFee;
       trip = await ApiService.startTrip(
         vehicleId: widget.car['id'] as String,
         duration: widget.duration,

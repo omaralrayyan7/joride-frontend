@@ -28,8 +28,14 @@ class ApiService {
   static const _activeRentalKey = 'active_rental_session';
   static const _storage = FlutterSecureStorage();
 
-  static String get baseUrl =>
-      kIsWeb ? 'http://localhost:9000' : 'http://10.0.2.2:9000';
+  /// Backend base URL. Override at build/run time with
+  /// `--dart-define=BASE_URL=https://staging.joride.app` (see README.md).
+  /// Falls back to the per-platform local-dev default when not provided.
+  static String get baseUrl {
+    const override = String.fromEnvironment('BASE_URL');
+    if (override.isNotEmpty) return override;
+    return kIsWeb ? 'http://localhost:9000' : 'http://10.0.2.2:9000';
+  }
 
   // ─── Auth ────────────────────────────────────────────────────────────────
 
@@ -291,6 +297,29 @@ class ApiService {
     await _putNoBody('/api/notifications/read-all?userId=$userId');
   }
 
+  // ─── Payments (HyperPay / OPPWA Copy&Pay) ──────────────────────────────────
+
+  /// Prepares a HyperPay checkout server-side (HyperPayGateway, backend E5.1).
+  /// Request: `{userId, amount, tripId?, currency?}`.
+  /// Response: `{paymentIntentId, checkoutId, widgetUrl, amount, currency,
+  /// state}` — `widgetUrl` is null until real HyperPay credentials are
+  /// configured on the backend. The backend confirms the final payment
+  /// result via webhook — this call only sets the checkout up.
+  static Future<Map<String, dynamic>> prepareHyperPayCheckout({
+    required double amount,
+    String currency = 'JOD',
+    String? tripId,
+  }) async {
+    final userId = await getUserId();
+    if (userId == null) throw ApiException('Not logged in.');
+    return _post('/api/payments/hyperpay/checkout', {
+      'userId': int.parse(userId),
+      'amount': amount,
+      'currency': currency,
+      if (tripId != null) 'tripId': int.parse(tripId),
+    });
+  }
+
   // ─── Wallet ───────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> getWallet() async {
@@ -303,6 +332,12 @@ class ApiService {
     return {'balance': balance, 'transactions': transactions};
   }
 
+  /// Requests a wallet top-up (backend E5.4). Manual-reconciliation payment
+  /// methods respond with `{status: "pending", pendingTopUpId, message}` and
+  /// no balance yet; immediate-credit methods respond with `{balance,
+  /// transaction}` and no `status` field at all. Only a present `status ==
+  /// "pending"` means pending — an absent status means the top-up already
+  /// landed, so the local balance cache is updated in that case.
   static Future<Map<String, dynamic>> topUp(
       double amount, String paymentMethod) async {
     final userId = await getUserId();
@@ -311,10 +346,13 @@ class ApiService {
       'amount': amount,
       'paymentMethod': paymentMethod,
     });
-    // تحديث الرصيد في التخزين المحلي
-    final newBalance = (res['balance'] as num?)?.toDouble() ?? 0.0;
-    await _storage.write(
-        key: _walletBalanceKey, value: newBalance.toString());
+    final isPending = (res['status'] as String?)?.toLowerCase() == 'pending';
+    if (!isPending && res['balance'] != null) {
+      // تحديث الرصيد في التخزين المحلي
+      final newBalance = (res['balance'] as num).toDouble();
+      await _storage.write(
+          key: _walletBalanceKey, value: newBalance.toString());
+    }
     return res;
   }
 
@@ -330,6 +368,22 @@ class ApiService {
 
   static Future<void> lockCar(String tripId) async {
     await _post('/api/digitalkey/lock', {'tripId': int.parse(tripId)});
+  }
+
+  /// Queues a lock/unlock command for the vehicle (backend E1.3).
+  /// [type] is 'lock' or 'unlock'. Returns the created command, including
+  /// its id and initial state (Queued/Sent/...) — poll [getVehicleCommand]
+  /// with that id to observe the state until it reaches a terminal value
+  /// (Confirmed/Failed/SafetyBlocked/Unauthorized).
+  static Future<Map<String, dynamic>> sendVehicleCommand(
+      String vehicleId, String type) {
+    return _post('/api/vehicles/$vehicleId/commands/$type', {});
+  }
+
+  /// Fetches the current state of a previously queued vehicle command.
+  static Future<Map<String, dynamic>> getVehicleCommand(
+      String vehicleId, String commandId) {
+    return _getMap('/api/vehicles/$vehicleId/commands/$commandId');
   }
 
   // ─── Admin ────────────────────────────────────────────────────────────────

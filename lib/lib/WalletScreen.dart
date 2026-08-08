@@ -165,13 +165,15 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _topUp(double amount, String paymentMethod) async {
     try {
-      await ApiService.topUp(amount, paymentMethod);
+      final res = await ApiService.topUp(amount, paymentMethod);
+      final isPending = (res['status'] as String?)?.toLowerCase() == 'pending';
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Successfully added ${amount.toStringAsFixed(2)} JOD to your wallet.'),
-            backgroundColor: Colors.green,
+            content: Text(isPending
+                ? 'Top-up of ${amount.toStringAsFixed(2)} JOD is pending confirmation.'
+                : 'Successfully added ${amount.toStringAsFixed(2)} JOD to your wallet.'),
+            backgroundColor: isPending ? Colors.orange : Colors.green,
           ),
         );
         _loadWallet();
@@ -398,11 +400,33 @@ class _WalletScreenState extends State<WalletScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  tx.description.isNotEmpty ? tx.description : tx.type,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        tx.description.isNotEmpty ? tx.description : tx.type,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (tx.isPending) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text('Pending',
+                            style: TextStyle(
+                                color: Colors.orange.shade800,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 3),
                 Text(
