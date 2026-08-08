@@ -114,6 +114,15 @@ class AppLocalizations {
     'retry': 'Retry',
     'loading': 'Loading...',
     'error': 'Error',
+    // Digital key — vehicle command states
+    'key_cmd_queued': 'Sending command...',
+    'key_cmd_sent': 'Waiting for vehicle...',
+    'key_cmd_confirmed': 'Done',
+    'key_cmd_failed': 'Command failed. Please try again.',
+    'key_cmd_timeout': 'The vehicle did not respond in time. Please try again.',
+    'key_cmd_unauthorized': 'You are not authorized to control this vehicle.',
+    'key_safety_blocked_title': 'Vehicle Not Ready',
+    'key_safety_blocked_msg': 'Vehicle must be stationary with the engine off before you can lock or unlock it.',
   };
 
   // ── Arabic strings ─────────────────────────────────────────────────────────
@@ -206,6 +215,15 @@ class AppLocalizations {
     'retry': 'إعادة المحاولة',
     'loading': 'جارٍ التحميل...',
     'error': 'خطأ',
+    // Digital key — vehicle command states
+    'key_cmd_queued': 'جارٍ إرسال الأمر...',
+    'key_cmd_sent': 'بانتظار استجابة المركبة...',
+    'key_cmd_confirmed': 'تم',
+    'key_cmd_failed': 'فشل تنفيذ الأمر. الرجاء المحاولة مرة أخرى.',
+    'key_cmd_timeout': 'لم تستجب المركبة في الوقت المحدد. الرجاء المحاولة مرة أخرى.',
+    'key_cmd_unauthorized': 'غير مصرح لك بالتحكم بهذه المركبة.',
+    'key_safety_blocked_title': 'المركبة غير جاهزة',
+    'key_safety_blocked_msg': 'يجب أن تكون المركبة متوقفة تماماً والمحرك مطفأ قبل قفلها أو فتحها.',
   };
 
   String t(String key) {

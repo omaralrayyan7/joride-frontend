@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import 'Home Screen.dart';
 import 'PostTripInspectionScreen.dart';
 import 'ReturnZoneScreen.dart';
+import 'l10n/app_localizations.dart';
 import 'services/api_service.dart';
 import 'widgets/end_trip_dialog.dart';
+
+/// Terminal states for a queued vehicle command (backend E1.3).
+const _terminalCommandStates = {
+  'Confirmed',
+  'Failed',
+  'SafetyBlocked',
+  'Unauthorized',
+};
 
 class DigitalKeyScreen extends StatefulWidget {
   final Map<String, dynamic>? car;
@@ -18,6 +27,7 @@ class _DigitalKeyScreenState extends State<DigitalKeyScreen> {
   bool isLocked = true;
   bool _hasAccess = false;
   bool _keyLoading = false;
+  String? _commandState;
   // On/off state of each control — used to light up the buttons.
   bool _hornOn   = false;
   bool _acOn     = false;
@@ -111,24 +121,119 @@ class _DigitalKeyScreenState extends State<DigitalKeyScreen> {
   }
 
   Future<void> _toggleLock() async {
-    if (!_hasAccess || _tripId == null) {
+    if (!_hasAccess || _car == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Digital key appears only after successful payment.'), backgroundColor: Colors.red),
       );
       return;
     }
-    setState(() => _keyLoading = true);
+    final vehicleId = _car!['id'] as String;
+    final commandType = isLocked ? 'unlock' : 'lock';
+
+    setState(() {
+      _keyLoading = true;
+      _commandState = 'Queued';
+    });
+
     try {
-      if (isLocked) {
-        await ApiService.unlockCar(_tripId!);
-      } else {
-        await ApiService.lockCar(_tripId!);
+      final created = await ApiService.sendVehicleCommand(vehicleId, commandType);
+      final commandId = (created['commandId'] ?? created['id'])?.toString();
+      if (commandId == null) throw ApiException('Invalid command response from server.');
+
+      final finalState = await _pollCommandStatus(vehicleId, commandId);
+      await _handleCommandResult(finalState, commandType);
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
       }
-      if (mounted) setState(() => isLocked = !isLocked);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _keyLoading = false);
+      if (mounted) {
+        setState(() {
+          _keyLoading = false;
+          _commandState = null;
+        });
+      }
+    }
+  }
+
+  /// Polls the vehicle command every 2s for up to 30s, returning the state
+  /// once it reaches a terminal value, or 'Timeout' if it never does.
+  Future<String> _pollCommandStatus(String vehicleId, String commandId) async {
+    const pollInterval = Duration(seconds: 2);
+    const maxWait = Duration(seconds: 30);
+    final deadline = DateTime.now().add(maxWait);
+
+    while (DateTime.now().isBefore(deadline)) {
+      await Future.delayed(pollInterval);
+      if (!mounted) return 'Timeout';
+      final status = await ApiService.getVehicleCommand(vehicleId, commandId);
+      final state = (status['state'] as String?) ?? 'Failed';
+      if (mounted) setState(() => _commandState = state);
+      if (_terminalCommandStates.contains(state)) return state;
+    }
+    return 'Timeout';
+  }
+
+  Future<void> _handleCommandResult(String state, String commandType) async {
+    if (!mounted) return;
+    final loc = AppLocalizations.of(context);
+
+    switch (state) {
+      case 'Confirmed':
+        setState(() => isLocked = commandType == 'lock');
+        return;
+      case 'SafetyBlocked':
+        await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Text(loc.t('key_safety_blocked_title')),
+            content: Text(loc.t('key_safety_blocked_msg')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.t('ok')),
+              ),
+            ],
+          ),
+        );
+        return;
+      case 'Unauthorized':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('key_cmd_unauthorized')), backgroundColor: Colors.red),
+        );
+        return;
+      case 'Timeout':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('key_cmd_timeout')), backgroundColor: Colors.orange),
+        );
+        return;
+      case 'Failed':
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.t('key_cmd_failed')), backgroundColor: Colors.red),
+        );
+    }
+  }
+
+  /// User-facing label for the in-flight command state, shown under the
+  /// lock button while a command is Queued/Sent.
+  String _commandStateLabel(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    switch (_commandState) {
+      case 'Sent':
+        return loc.t('key_cmd_sent');
+      case 'Queued':
+      default:
+        return loc.t('key_cmd_queued');
     }
   }
 
@@ -213,6 +318,11 @@ class _DigitalKeyScreenState extends State<DigitalKeyScreen> {
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 2)),
+                        if (_keyLoading) ...[
+                          const SizedBox(height: 10),
+                          Text(_commandStateLabel(context),
+                              style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                        ],
                         const SizedBox(height: 40),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
