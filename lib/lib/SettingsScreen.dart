@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: joRideAccent),
             title: Text(l.t('dark_mode')),
             value: themeProvider.isDarkMode,
-            activeColor: joRideAccent,
+            activeThumbColor: joRideAccent,
             onChanged: themeProvider.toggleTheme,
           ),
           ListTile(
@@ -108,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: joRideAccent),
             title: Text(l.t('push_notif')),
             value: _pushNotifications,
-            activeColor: joRideAccent,
+            activeThumbColor: joRideAccent,
             onChanged: (v) {
               setState(() => _pushNotifications = v);
               _saveBool('settings_push_notifications', v);
@@ -118,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             secondary: const Icon(Icons.email_outlined, color: joRideAccent),
             title: Text(l.t('email_promo')),
             value: _emailPromotions,
-            activeColor: joRideAccent,
+            activeThumbColor: joRideAccent,
             onChanged: (v) {
               setState(() => _emailPromotions = v);
               _saveBool('settings_email_promotions', v);
@@ -132,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(l.t('biometric_unlock')),
             subtitle: Text(l.t('biometric_unlock')),
             value: _biometricUnlock,
-            activeColor: joRideAccent,
+            activeThumbColor: joRideAccent,
             onChanged: (v) {
               setState(() => _biometricUnlock = v);
               _saveBool('settings_biometric_unlock', v);
@@ -142,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             secondary: const Icon(Icons.lock_clock, color: joRideAccent),
             title: Text(l.t('auto_lock')),
             value: _autoLock,
-            activeColor: joRideAccent,
+            activeThumbColor: joRideAccent,
             onChanged: (v) {
               setState(() => _autoLock = v);
               _saveBool('settings_auto_lock', v);

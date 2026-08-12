@@ -399,9 +399,9 @@ class _DigitalKeyScreenState extends State<DigitalKeyScreen> {
     );
   }
 
-  Widget _homeButton() => InkWell(onTap: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 0)), (route) => false), child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle), child: const Icon(Icons.home_rounded, color: Colors.white, size: 28)));
+  Widget _homeButton() => InkWell(onTap: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 0)), (route) => false), child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), shape: BoxShape.circle), child: const Icon(Icons.home_rounded, color: Colors.white, size: 28)));
 
-  Widget _statusIndicator() => Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(20)), child: const Row(mainAxisSize: MainAxisSize.min, children: [CircleAvatar(radius: 4, backgroundColor: Colors.greenAccent), SizedBox(width: 8), Text('Paid & Online', style: TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.w600))]));
+  Widget _statusIndicator() => Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)), child: const Row(mainAxisSize: MainAxisSize.min, children: [CircleAvatar(radius: 4, backgroundColor: Colors.greenAccent), SizedBox(width: 8), Text('Paid & Online', style: TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.w600))]));
 
   /// Control button that visibly lights up when [isOn] is true:
   /// the background glows, the icon takes the [onColor], and an outer
@@ -431,7 +431,7 @@ class _DigitalKeyScreenState extends State<DigitalKeyScreen> {
             decoration: BoxDecoration(
               color: isOn
                   ? onColor.withAlpha(55)
-                  : Colors.white.withOpacity(0.05),
+                  : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: isOn ? onColor : Colors.white10,

@@ -151,7 +151,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -390,7 +390,7 @@ class _CarsTabState extends State<_CarsTab> {
             : Colors.grey;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
       child: Text(status, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
@@ -747,13 +747,13 @@ class _UserEditDialogState extends State<_UserEditDialog> {
             SwitchListTile(
               title: const Text('Administrator'),
               value: _isAdmin,
-              activeColor: _accent,
+              activeThumbColor: _accent,
               onChanged: (v) => setState(() => _isAdmin = v),
             ),
             SwitchListTile(
               title: const Text('Active'),
               value: _isActive,
-              activeColor: _accent,
+              activeThumbColor: _accent,
               onChanged: (v) => setState(() => _isActive = v),
             ),
           ],
@@ -914,7 +914,7 @@ class _PricingEditDialogState extends State<_PricingEditDialog> {
           SwitchListTile(
             title: const Text('Active'),
             value: _active,
-            activeColor: _accent,
+            activeThumbColor: _accent,
             onChanged: (v) => setState(() => _active = v),
           ),
         ],
@@ -1041,8 +1041,8 @@ class _AuditTabState extends State<_AuditTab> {
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: role == 'Admin'
-                                        ? Colors.deepPurple.withOpacity(0.15)
-                                        : Colors.blue.withOpacity(0.15),
+                                        ? Colors.deepPurple.withValues(alpha: 0.15)
+                                        : Colors.blue.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(role,

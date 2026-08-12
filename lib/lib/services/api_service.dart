@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/auth_models.dart';
-import '../models/vehicle_model.dart';
 
 class ApiException implements Exception {
   final int? statusCode;

@@ -88,7 +88,7 @@ class _DrivingLicenseScreenState extends State<DrivingLicenseScreen> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0D1B3E).withOpacity(0.4),
+                  color: const Color(0xFF0D1B3E).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -233,7 +233,7 @@ class _DrivingLicenseScreenState extends State<DrivingLicenseScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -244,7 +244,7 @@ class _DrivingLicenseScreenState extends State<DrivingLicenseScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: joRideAccent.withOpacity(0.08),
+              color: joRideAccent.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: joRideAccent, size: 20),

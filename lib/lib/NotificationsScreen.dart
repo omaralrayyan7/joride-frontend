@@ -11,7 +11,6 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   static const Color joRideAccent = Color(0xFF13366B);
-  static const Color scaffoldBg = Color(0xFFF8F9FD);
 
   List<AppNotification> _notifications = [];
   bool _loading = true;
@@ -222,7 +221,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -237,7 +236,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.12),
+                  color: iconColor.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(_iconForType(notif.type), color: iconColor, size: 22),

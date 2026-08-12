@@ -253,7 +253,7 @@ class _FareMeterScreenState extends State<FareMeterScreen> {
 
   Widget _rateChip(String title, String value) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-    decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(999)),
+    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(999)),
     child: Text('$title: $value', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
   );
 
@@ -280,7 +280,7 @@ class _FareMeterScreenState extends State<FareMeterScreen> {
             decoration: BoxDecoration(
               color: isOn
                   ? onColor.withAlpha(38)            // same alpha as lock
-                  : Colors.white.withOpacity(enabled ? 0.1 : 0.04),
+                  : Colors.white.withValues(alpha: enabled ? 0.1 : 0.04),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isOn
@@ -337,7 +337,7 @@ class _FareMeterScreenState extends State<FareMeterScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 0)), (route) => false),
-                    child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), shape: BoxShape.circle), child: const Icon(Icons.arrow_back, color: Colors.white, size: 22)),
+                    child: Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), shape: BoxShape.circle), child: const Icon(Icons.arrow_back, color: Colors.white, size: 22)),
                   ),
                   Expanded(child: Center(child: Text(expired ? 'Overtime Active' : 'Trip Active', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)))),
                   const SizedBox(width: 42),
@@ -370,10 +370,10 @@ class _FareMeterScreenState extends State<FareMeterScreen> {
                 width: 160,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: isCarLocked ? Colors.red.withOpacity(0.06) : Colors.green.withOpacity(0.06),
+                  color: isCarLocked ? Colors.red.withValues(alpha: 0.06) : Colors.green.withValues(alpha: 0.06),
                   shape: BoxShape.circle,
                   border: Border.all(color: isCarLocked ? Colors.redAccent : Colors.greenAccent, width: 3),
-                  boxShadow: [BoxShadow(color: (isCarLocked ? Colors.redAccent : Colors.greenAccent).withOpacity(0.15), blurRadius: 35, spreadRadius: 2)],
+                  boxShadow: [BoxShadow(color: (isCarLocked ? Colors.redAccent : Colors.greenAccent).withValues(alpha: 0.15), blurRadius: 35, spreadRadius: 2)],
                 ),
                 child: _keyLoading
                     ? const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))

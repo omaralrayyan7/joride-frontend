@@ -15,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   static const Color joRideAccent = Color(0xFF13366B);
-  static const Color scaffoldBg = Color(0xFFF8F9FD);
 
   UserProfile? _profile;
   bool _loading = true;
@@ -193,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

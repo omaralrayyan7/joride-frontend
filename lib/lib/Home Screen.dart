@@ -14,7 +14,6 @@ import 'AdminDashboardScreen.dart';
 import 'l10n/app_localizations.dart';
 import 'login_screen.dart';
 import 'widgets/car_image.dart';
-import 'models/vehicle_model.dart';
 import 'models/auth_models.dart';
 import 'services/api_service.dart';
 
@@ -529,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.1), blurRadius: 20)
+                        color: Colors.black.withValues(alpha: 0.1), blurRadius: 20)
                   ],
                 ),
                 child: ClipRRect(
@@ -649,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.15), blurRadius: 15)
+              color: Colors.black.withValues(alpha: 0.15), blurRadius: 15)
         ],
       ),
       child: Column(

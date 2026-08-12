@@ -276,7 +276,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: gradColors.first.withOpacity(0.35),
+              color: gradColors.first.withValues(alpha: 0.35),
               blurRadius: 18,
               offset: const Offset(0, 8),
             ),
@@ -307,7 +307,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -392,7 +392,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.star_border_rounded,
@@ -406,7 +406,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.delete_outline_rounded,

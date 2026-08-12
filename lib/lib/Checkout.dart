@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'Home Screen.dart';
 import 'FareMeterScreen.dart';
 import 'HyperPayPaymentScreen.dart';
 import 'models/auth_models.dart';
@@ -159,7 +158,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     if (!mounted) return;
-    _showSuccessDialog(context, trip!);
+    _showSuccessDialog(context, trip);
   }
 
   Widget _invoiceRow(String label, String value, {bool isTotal = false}) {
@@ -214,7 +213,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
       ),
       child: Row(
         children: [
