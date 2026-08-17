@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneCtrl = TextEditingController();
   final _idCtrl = TextEditingController();
   final _licenseCtrl = TextEditingController();
+  final _referralCtrl = TextEditingController();
   bool _loading = false;
 
   // Strict email format (mirrors the backend regex).
@@ -31,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneCtrl.dispose();
     _idCtrl.dispose();
     _licenseCtrl.dispose();
+    _referralCtrl.dispose();
     super.dispose();
   }
 
@@ -77,6 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _loading = true);
     try {
+      final referral = _referralCtrl.text.trim();
       await ApiService.register(
         name: name,
         email: email,
@@ -85,6 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         phone: phone,
         idNumber: idNumber,
         drivingLicenseNumber: licenseNumber,
+        referralCode: referral.isEmpty ? null : referral,
       );
 
       final errors = <String>[];
@@ -166,6 +170,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _input('ID Number', Icons.badge, controller: _idCtrl),
                   const SizedBox(height: 15),
                   _input('Driving License Number', Icons.card_membership, controller: _licenseCtrl),
+                  const SizedBox(height: 15),
+                  _input('Referral Code (optional)', Icons.redeem, controller: _referralCtrl),
                   const SizedBox(height: 30),
                   SizedBox(
                       width: double.infinity,

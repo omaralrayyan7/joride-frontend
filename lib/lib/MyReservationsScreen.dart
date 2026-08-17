@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'FareMeterScreen.dart';
 import 'PostTripInspectionScreen.dart';
+import 'RateTripScreen.dart';
+import 'ReceiptScreen.dart';
 import 'ReturnZoneScreen.dart';
 import 'models/auth_models.dart';
 import 'services/api_service.dart';
@@ -66,7 +68,9 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
         setState(() {
           _activeTrip = trip;
           _activeCar = car;
-          _pastTrips = trips.where((t) => t.isCompleted).toList()
+          _pastTrips = trips
+              .where((t) => t.status == 'Completed' || t.status == 'Cancelled')
+              .toList()
             ..sort((a, b) => b.startTime.compareTo(a.startTime));
           _loading = false;
         });
@@ -132,6 +136,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
           builder: (_) => PostTripInspectionScreen(
             car: car,
             finalFare: ended.totalFare ?? 0,
+            tripId: trip.id,
           ),
         ),
         (_) => false,
@@ -172,7 +177,7 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
             if (_pastTrips.isEmpty)
               const Text('No past trips yet.', style: TextStyle(color: Colors.grey))
             else
-              ..._pastTrips.map((trip) => _buildPastReservationItem('Vehicle #${trip.vehicleId}', trip.status, _formatDate(trip.startTime), trip.totalFare != null ? '${trip.totalFare!.toStringAsFixed(2)} JOD' : '')).toList(),
+              ..._pastTrips.map(_buildPastTripCard).toList(),
           ],
         ),
       ),
@@ -263,11 +268,86 @@ class _MyReservationsScreenState extends State<MyReservationsScreen> {
     );
   }
 
-  Widget _buildPastReservationItem(String model, String status, String date, String fare) {
+  Widget _buildPastTripCard(Trip trip) {
+    final joRideAccent = Theme.of(context).colorScheme.primary;
+    final fare = trip.totalFare != null ? '${trip.totalFare!.toStringAsFixed(2)} JOD' : '';
+    final statusColor = trip.status == 'Completed' ? Colors.green : Colors.red;
+    final isCompleted = trip.status == 'Completed';
+
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: BorderSide(color: Colors.grey[200]!)),
-      child: ListTile(leading: const Icon(Icons.history, color: Colors.grey), title: Text(model), subtitle: Text('$date${fare.isNotEmpty ? '  ·  $fare' : ''}'), trailing: Text(status, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: Colors.grey[200]!),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.history, color: Colors.grey),
+              const SizedBox(width: 10),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('Vehicle #${trip.vehicleId}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('${_formatDate(trip.startTime)}${fare.isNotEmpty ? '  ·  $fare' : ''}',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              ])),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(20),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(trip.status,
+                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ]),
+            if (isCompleted || trip.status == 'Cancelled') ...[
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: joRideAccent,
+                      side: BorderSide(color: joRideAccent.withAlpha(80)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ReceiptScreen(tripId: trip.id)),
+                    ),
+                    icon: const Icon(Icons.receipt_outlined, size: 16),
+                    label: const Text('Receipt', style: TextStyle(fontSize: 12)),
+                  ),
+                ),
+                if (isCompleted) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.amber.shade700,
+                        side: BorderSide(color: Colors.amber.withAlpha(100)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => RateTripScreen(tripId: trip.id)),
+                      ),
+                      icon: const Icon(Icons.star_outline, size: 16),
+                      label: const Text('Rate', style: TextStyle(fontSize: 12)),
+                    ),
+                  ),
+                ],
+              ]),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

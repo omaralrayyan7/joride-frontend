@@ -9,6 +9,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_models.dart';
 import '../models/vehicle_model.dart';
 
+// Re-export new model types used in this file so callers that import only
+// api_service.dart can access them without a separate model import.
+export '../models/auth_models.dart'
+    show LoyaltyInfo, ReferralInfo, Referral, TripRating;
+
 class ApiException implements Exception {
   final int? statusCode;
   final String message;
@@ -41,6 +46,7 @@ class ApiService {
     required String phone,
     String? idNumber,
     String? drivingLicenseNumber,
+    String? referralCode,
   }) async {
     final res = await _post('/api/auth/register', {
       'name': name,
@@ -51,6 +57,8 @@ class ApiService {
       if (idNumber != null && idNumber.trim().isNotEmpty) 'idNumber': idNumber.trim(),
       if (drivingLicenseNumber != null && drivingLicenseNumber.trim().isNotEmpty)
         'drivingLicenseNumber': drivingLicenseNumber.trim(),
+      if (referralCode != null && referralCode.trim().isNotEmpty)
+        'referralCode': referralCode.trim(),
     });
     final auth = AuthResponse.fromJson(res);
     await _persistAuth(auth);
@@ -316,6 +324,60 @@ class ApiService {
     await _storage.write(
         key: _walletBalanceKey, value: newBalance.toString());
     return res;
+  }
+
+  // ─── Referrals ────────────────────────────────────────────────────────────
+
+  static Future<ReferralInfo> getReferralInfo() async {
+    final res = await _getMap('/api/referrals/my-code');
+    return ReferralInfo.fromJson(res);
+  }
+
+  // ─── Loyalty ──────────────────────────────────────────────────────────────
+
+  static Future<LoyaltyInfo> getLoyaltyInfo() async {
+    final userId = await getUserId();
+    if (userId == null) throw ApiException('Not logged in.');
+    final res = await _getMap('/api/loyalty/$userId');
+    return LoyaltyInfo.fromJson(res);
+  }
+
+  // ─── Ratings ──────────────────────────────────────────────────────────────
+
+  static Future<TripRating> submitRating({
+    required String tripId,
+    required int stars,
+    String? comment,
+    String? conditionPhotoUrl,
+  }) async {
+    final res = await _post('/api/trips/$tripId/rating', {
+      'stars': stars,
+      if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+      if (conditionPhotoUrl != null && conditionPhotoUrl.trim().isNotEmpty)
+        'conditionPhotoUrl': conditionPhotoUrl.trim(),
+    });
+    return TripRating.fromJson(res);
+  }
+
+  static Future<TripRating?> getTripRating(String tripId) async {
+    try {
+      final res = await _getMap('/api/trips/$tripId/rating');
+      return TripRating.fromJson(res);
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  // ─── Receipts ─────────────────────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>> getTripReceipt(String tripId) =>
+      _getMap('/api/trips/$tripId/receipt');
+
+  static Future<List<Map<String, dynamic>>> getUserReceipts() async {
+    final userId = await getUserId();
+    if (userId == null) throw ApiException('Not logged in.');
+    return _getList('/api/users/$userId/receipts');
   }
 
   // ─── Digital Key ──────────────────────────────────────────────────────────

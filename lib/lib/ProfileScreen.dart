@@ -4,7 +4,10 @@ import 'services/api_service.dart';
 import 'models/auth_models.dart';
 import 'IDVerificationScreen.dart';
 import 'DrivingLicenseScreen.dart';
+import 'LoyaltyScreen.dart';
 import 'PaymentMethodsScreen.dart';
+import 'ReferralScreen.dart';
+import 'ReceiptsListScreen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -297,6 +300,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Payment Methods',
             subtitle: 'Manage your cards',
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen())),
+          ),
+          _infoTile(
+            icon: Icons.workspace_premium,
+            title: 'Loyalty Program',
+            subtitle: 'View your tier & trip discounts',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyScreen())),
+          ),
+          _infoTile(
+            icon: Icons.redeem,
+            title: 'Referral Program',
+            subtitle: 'Share your code, earn 1.00 JOD per friend',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReferralScreen())),
+          ),
+          _infoTile(
+            icon: Icons.receipt_long,
+            title: 'My Receipts',
+            subtitle: 'View receipts for past trips',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceiptsListScreen())),
           ),
           _infoTile(
             icon: Icons.help_outline,

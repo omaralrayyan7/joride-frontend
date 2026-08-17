@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'Home Screen.dart';
+import 'RateTripScreen.dart';
 import 'l10n/app_localizations.dart';
 import 'widgets/car_image.dart';
 
@@ -11,11 +12,13 @@ const Color _kBrand = Color(0xFF13366B);
 class PostTripInspectionScreen extends StatefulWidget {
   final Map<String, dynamic> car;
   final double finalFare;
+  final String? tripId;
 
   const PostTripInspectionScreen({
     super.key,
     required this.car,
     required this.finalFare,
+    this.tripId,
   });
 
   @override
@@ -44,7 +47,8 @@ class _PostTripInspectionScreenState extends State<PostTripInspectionScreen> {
       setState(() => _captured[key] = !(_captured[key] ?? false));
 
   void _submit() {
-    // UI-only — show success then return home
+    final tripId = widget.tripId;
+    final vehicleModel = (widget.car['model'] as String?) ?? 'Vehicle';
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -53,35 +57,46 @@ class _PostTripInspectionScreenState extends State<PostTripInspectionScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_rounded,
-                color: Colors.green, size: 70),
+            const Icon(Icons.check_circle_rounded, color: Colors.green, size: 70),
             const SizedBox(height: 14),
             const Text('Inspection Submitted',
-                style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             Text(
               'Cleanliness rating: ${_cleanliness.toStringAsFixed(0)} / 10',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface.withAlpha(170)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(170)),
             ),
             const SizedBox(height: 20),
+            if (tripId != null)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => Navigator.pushAndRemoveUntil(
+                  ctx,
+                  MaterialPageRoute(builder: (_) => RateTripScreen(tripId: tripId, vehicleModel: vehicleModel)),
+                  (_) => false,
+                ),
+                icon: const Icon(Icons.star_rounded, color: Colors.white),
+                label: const Text('Rate Your Trip',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            if (tripId != null) const SizedBox(height: 10),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kBrand,
                 minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () => Navigator.pushAndRemoveUntil(
                 ctx,
-                MaterialPageRoute(
-                    builder: (_) => const HomeScreen(initialIndex: 0)),
+                MaterialPageRoute(builder: (_) => const HomeScreen(initialIndex: 0)),
                 (_) => false,
               ),
               child: const Text('Back to Home',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),

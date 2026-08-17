@@ -76,6 +76,8 @@ class Trip {
   final String overtimePaymentStatus;
   final bool digitalKeyEnabled;
   final String status;
+  final double discountPercent;
+  final double discountAmount;
 
   const Trip({
     required this.id,
@@ -97,6 +99,8 @@ class Trip {
     this.overtimePaymentStatus = 'None',
     this.digitalKeyEnabled = false,
     required this.status,
+    this.discountPercent = 0,
+    this.discountAmount = 0,
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) {
@@ -124,6 +128,8 @@ class Trip {
       overtimePaymentStatus: (json['overtimePaymentStatus'] as String?) ?? 'None',
       digitalKeyEnabled: (json['digitalKeyEnabled'] as bool?) ?? false,
       status: (json['status'] as String?) ?? 'Unknown',
+      discountPercent: (json['discountPercent'] as num?)?.toDouble() ?? 0,
+      discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -210,6 +216,96 @@ class AppNotification {
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
+}
+
+class LoyaltyInfo {
+  final int userId;
+  final String tier;
+  final int completedTrips;
+  final int discountPercent;
+  final int tripsToNextTier;
+
+  const LoyaltyInfo({
+    required this.userId,
+    required this.tier,
+    required this.completedTrips,
+    required this.discountPercent,
+    required this.tripsToNextTier,
+  });
+
+  factory LoyaltyInfo.fromJson(Map<String, dynamic> json) => LoyaltyInfo(
+        userId: (json['userId'] as num).toInt(),
+        tier: (json['tier'] as String?) ?? 'Bronze',
+        completedTrips: (json['completedTrips'] as num?)?.toInt() ?? 0,
+        discountPercent: (json['discountPercent'] as num?)?.toInt() ?? 0,
+        tripsToNextTier: (json['tripsToNextTier'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class Referral {
+  final int referredUserId;
+  final double rewardAmount;
+  final DateTime createdAt;
+
+  const Referral({
+    required this.referredUserId,
+    required this.rewardAmount,
+    required this.createdAt,
+  });
+
+  factory Referral.fromJson(Map<String, dynamic> json) => Referral(
+        referredUserId: (json['referredUserId'] as num).toInt(),
+        rewardAmount: (json['rewardAmount'] as num?)?.toDouble() ?? 0,
+        createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
+      );
+}
+
+class ReferralInfo {
+  final String code;
+  final int totalReferrals;
+  final double totalEarned;
+  final List<Referral> referrals;
+
+  const ReferralInfo({
+    required this.code,
+    required this.totalReferrals,
+    required this.totalEarned,
+    required this.referrals,
+  });
+
+  factory ReferralInfo.fromJson(Map<String, dynamic> json) => ReferralInfo(
+        code: (json['code'] as String?) ?? '',
+        totalReferrals: (json['totalReferrals'] as num?)?.toInt() ?? 0,
+        totalEarned: (json['totalEarned'] as num?)?.toDouble() ?? 0,
+        referrals: ((json['referrals'] as List?) ?? [])
+            .cast<Map<String, dynamic>>()
+            .map(Referral.fromJson)
+            .toList(),
+      );
+}
+
+class TripRating {
+  final int tripId;
+  final int stars;
+  final String? comment;
+  final String? conditionPhotoUrl;
+  final DateTime submittedAt;
+
+  const TripRating({
+    required this.tripId,
+    required this.stars,
+    this.comment,
+    this.conditionPhotoUrl,
+    required this.submittedAt,
+  });
+
+  factory TripRating.fromJson(Map<String, dynamic> json) => TripRating(
+        tripId: (json['tripId'] as num).toInt(),
+        stars: (json['stars'] as num).toInt(),
+        comment: json['comment'] as String?,
+        conditionPhotoUrl: json['conditionPhotoUrl'] as String?,
+        submittedAt: DateTime.parse(json['submittedAt'] as String).toLocal(),
+      );
 }
 
 class WalletTransaction {
