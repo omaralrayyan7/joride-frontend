@@ -86,6 +86,11 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _vehiclesLoading = true;
   String? _vehiclesError;
 
+  bool _mapReady = false;
+  bool _mapLoadFailed = false;
+  Timer? _mapLoadTimer;
+  int _mapRetryKey = 0;
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadVehicles();
     _loadUserInfo();
     _loadUnreadCount();
+    _startMapLoadWatchdog();
 
     _adTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_adController.hasClients) {
@@ -130,7 +136,27 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _adTimer.cancel();
     _adController.dispose();
+    _mapLoadTimer?.cancel();
     super.dispose();
+  }
+
+  /// GoogleMap gives no error callback for billing/quota failures — it just
+  /// renders a blank/broken tile grid. If onMapCreated hasn't fired within a
+  /// few seconds, assume the map failed to load and show a fallback message.
+  void _startMapLoadWatchdog() {
+    _mapLoadTimer?.cancel();
+    _mapLoadTimer = Timer(const Duration(seconds: 8), () {
+      if (mounted && !_mapReady) setState(() => _mapLoadFailed = true);
+    });
+  }
+
+  void _retryMap() {
+    setState(() {
+      _mapLoadFailed = false;
+      _mapReady = false;
+      _mapRetryKey++;
+    });
+    _startMapLoadWatchdog();
   }
 
   Future<void> _loadUserInfo() async {
@@ -512,6 +538,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildMapUnavailable() {
+    return Container(
+      color: Colors.grey.shade200,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.map_outlined, size: 48, color: Colors.grey.shade600),
+          const SizedBox(height: 12),
+          Text(
+            'Map unavailable',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.grey.shade800),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'We couldn\'t load the map right now. Please try again later.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: _retryMap,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMainMapStack() {
     final filtered = _filterCars(_vehicles);
 
@@ -534,13 +594,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30),
-                  child: GoogleMap(
-                    initialCameraPosition: _initialPosition,
-                    markers: _buildMarkers(filtered),
-                    zoomControlsEnabled: false,
-                    myLocationButtonEnabled: false,
-                    onTap: (_) => setState(() => activeCar = null),
-                  ),
+                  child: _mapLoadFailed
+                      ? _buildMapUnavailable()
+                      : GoogleMap(
+                          key: ValueKey(_mapRetryKey),
+                          initialCameraPosition: _initialPosition,
+                          markers: _buildMarkers(filtered),
+                          zoomControlsEnabled: false,
+                          myLocationButtonEnabled: false,
+                          onTap: (_) => setState(() => activeCar = null),
+                          onMapCreated: (controller) {
+                            _mapLoadTimer?.cancel();
+                            if (mounted) setState(() => _mapReady = true);
+                          },
+                        ),
                 ),
               ),
               // Loading spinner overlay

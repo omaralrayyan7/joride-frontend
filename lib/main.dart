@@ -9,7 +9,16 @@ import 'lib/login_screen.dart';
 import 'lib/services/api_service.dart';
 import 'lib/theme_provider.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
+  ApiService.onUnauthorized = () {
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  };
+
   runApp(
     MultiProvider(
       providers: [
@@ -32,6 +41,7 @@ class MyApp extends StatelessWidget {
     final locale = Provider.of<LocaleProvider>(context);
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'joRide',
       themeMode: theme.themeMode,
@@ -127,6 +137,8 @@ class _AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!ApiService.isConfigured) return const _ConfigErrorScreen();
+
     return FutureBuilder<String?>(
       future: ApiService.getToken(),
       builder: (context, snapshot) {
@@ -139,6 +151,43 @@ class _AuthGate extends StatelessWidget {
         if (token != null && token.isNotEmpty) return const HomeScreen();
         return const LoginScreen();
       },
+    );
+  }
+}
+
+/// Shown instead of crashing when a release build was shipped without
+/// `--dart-define=BASE_URL=...` — the app has no backend to talk to.
+class _ConfigErrorScreen extends StatelessWidget {
+  const _ConfigErrorScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FD),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 20),
+              const Text(
+                'App is not configured',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'This build was shipped without a backend URL. '
+                'Rebuild with --dart-define=BASE_URL=https://your-api-host.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

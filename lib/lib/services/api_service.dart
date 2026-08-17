@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show SocketException;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,8 +33,33 @@ class ApiService {
   static const _activeRentalKey = 'active_rental_session';
   static const _storage = FlutterSecureStorage();
 
-  static String get baseUrl =>
-      kIsWeb ? 'http://localhost:9000' : 'http://10.0.2.2:9000';
+  /// Passed at build/run time via `--dart-define=BASE_URL=https://api.example.com`.
+  static const String _definedBaseUrl = String.fromEnvironment('BASE_URL');
+
+  /// False only in a release build with no BASE_URL define — the state that
+  /// must never silently fall back to localhost.
+  static bool get isConfigured => _definedBaseUrl.isNotEmpty || !kReleaseMode;
+
+  static String get baseUrl {
+    if (_definedBaseUrl.isNotEmpty) return _definedBaseUrl;
+    if (kReleaseMode) {
+      throw StateError(
+        'BASE_URL is not configured. Build with '
+        '--dart-define=BASE_URL=https://your-api-host before release.',
+      );
+    }
+    // Debug/profile convenience fallback only — never used in release builds.
+    return kIsWeb ? 'http://localhost:9000' : 'http://10.0.2.2:9000';
+  }
+
+  /// Set by the app root so ApiService can react to a 401 without each
+  /// screen needing its own auth-expired handling.
+  static void Function()? onUnauthorized;
+
+  static Future<void> _handleUnauthorized() async {
+    await logout();
+    onUnauthorized?.call();
+  }
 
   // ─── Auth ────────────────────────────────────────────────────────────────
 
@@ -112,6 +137,14 @@ class ApiService {
     return double.tryParse(val) ?? 0.0;
   }
 
+
+  /// NOTE: `/api/auth/forgot-password` does not exist on the backend yet —
+  /// this call will 404 until it's added. Expected contract: POST with
+  /// {"email": "..."} → 200 regardless of whether the email is registered
+  /// (avoid leaking account existence), which triggers a reset email/SMS.
+  static Future<void> requestPasswordReset(String email) async {
+    await _post('/api/auth/forgot-password', {'email': email});
+  }
 
   // ─── OTP Verification ─────────────────────────────────────────────────────
 
@@ -495,6 +528,7 @@ class ApiService {
       if (decoded is! List) throw ApiException('Unexpected response format.');
       return decoded.cast<Map<String, dynamic>>();
     }
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,
@@ -516,6 +550,7 @@ class ApiService {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,
@@ -545,6 +580,7 @@ class ApiService {
       if (res.body.isEmpty) return {};
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,
@@ -574,6 +610,7 @@ class ApiService {
       if (res.body.isEmpty) return {};
       return jsonDecode(res.body) as Map<String, dynamic>;
     }
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,
@@ -593,6 +630,7 @@ class ApiService {
     }
 
     if (res.statusCode >= 200 && res.statusCode < 300) return;
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,
@@ -613,6 +651,7 @@ class ApiService {
     }
 
     if (res.statusCode >= 200 && res.statusCode < 300) return;
+    if (res.statusCode == 401) await _handleUnauthorized();
     throw ApiException(
       res.body.isNotEmpty ? res.body : 'Request failed (${res.statusCode}).',
       statusCode: res.statusCode,

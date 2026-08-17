@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'l10n/app_localizations.dart';
+import 'services/api_service.dart';
 
 const Color _kBrand = Color(0xFF1A3D7C);
 
@@ -29,12 +30,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 900)); // UI-only simulation
-    if (mounted) {
-      setState(() {
-        _loading = false;
-        _sent    = true;
-      });
+    try {
+      await ApiService.requestPasswordReset(email);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _sent    = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _snack('Could not send reset link: $e', Colors.red);
+      }
     }
   }
 
